@@ -18,21 +18,22 @@ public class NoteSimulation extends Simulation {
   FeederBuilder<String> feeder = csv("notes.scv").random();
 
   ChainBuilder create = feed(feeder).exec(
-          http("createNotes")
-              .put("/note")
-              .body(StringBody("{\"id\": \"#{noteId}\",\"description\": \"#{description}\",\"created\": \"#{created}\"}")));
+      http("createNotes")
+          .put("/note")
+          .body(StringBody(
+              "{\"id\": \"#{noteId}\",\"description\": \"#{description}\",\"created\": \"#{created}\"}")));
   ChainBuilder find = feed(feeder).exec(
       http("getUserById").get("/note/#{noteId}"));
 
-  HttpProtocolBuilder protocol = http.baseUrl("http://localhost:8080").contentTypeHeader("application/json");
+  HttpProtocolBuilder protocol = http.baseUrl("http://localhost:8080")
+      .contentTypeHeader("application/json");
   ScenarioBuilder createUsers = scenario("createNotes").exec(create);
   ScenarioBuilder findUser = scenario("findNotes").exec(find);
 
-
-  {
+  public NoteSimulation() {
     setUp(
         createUsers.injectOpen(rampUsers(40).during(5)),
-        findUser.injectOpen(rampUsers(1000).during(20))
+        findUser.injectOpen(rampUsers(10000).during(20))
     ).protocols(protocol);
   }
 
